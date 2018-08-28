@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!-- 添加命名空间 -->
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<title>书籍编辑</title>
+<!-- 主题css -->
+<!-- <link href="resources/theme/dist/<spring:theme code="bstheme"/>/bootstrap.min.css" rel="stylesheet" type="text/css" /> -->
+<link th:href="@{'resources/theme/dist/'+${#themes.code('bstheme')}+'/bootstrap.min.css'}" rel="stylesheet" type="text/css" />
+<link href="resources/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css" rel="stylesheet" type="text/css"/>
+<style type="text/css">
+/* 修改图片上传中边框内容 */
+  .custom-file-label:after{
+             content: "请选择文件"
+  } 
+</style>
+</head>
+<body>
+	<div class="container">
+		<!-- 顶部导航栏 -->
+		<div class="row ">
+			<div class="col-md-12">
+				<!-- 静态包含，顶部导航栏模块 -->
+				<!--include包含内容可能会丢; repace包含的div可能丢失，内容不丢失  -->
+				<div class="navbar navbar-expand-lg navbar-light bg-light" th:replace="common/nav::nav"></div>
+			</div>
+		</div>
+		<!-- 数据显示界面 -->
+		<form th:action="@{bookEdit}" method="post" enctype="multipart/form-data" th:object="${book}" class="container card " style="margin-bottom: 0px">
+					 <!--  <div class="alert alert-primary container  mx-auto  text-center card" role="alert">
+						<p>
+							<marquee>书籍信息的添加</marquee>滚动字体
+						</p>
+
+					</div>  --> 
+					<!-- 隐藏接收的id，不然没有id，更新不了 -->
+					<input type="hidden" th:field="*{id}"/>
+					<!-- -name 书名-->
+					<div class="form-group row  w-75  mx-auto ">
+				   	<!-- 国际化key -->
+						<label th:for="${'name'}" class="col-sm-2 col-form-label" th:text="#{book.name}"></label>
+						<div class="col-sm-10  w-75">
+							<input type="text" th:field="*{name}" class="form-control" th:class="${#fields.hasErrors('name')}? 'form-control is-invalid':'form-control'" />
+							<!-- errors错误信息默认是显示在span中，修改element显示在div中 -->
+							<div th:errors="*{name}" class="invalid-feedback"></div>
+						</div>
+					
+					</div>
+					<!-- - descri -->
+					<div class="form-group row  w-75  mx-auto ">
+						<label th:for="${'descri'}"  class="col-sm-2 col-form-label" th:text="#{book.descri}"></label>
+						<div class="col-sm-9  w-75">
+							<textarea th:field="*{descri}"  class="form-control" th:class="${#fields.hasErrors('descri')}? 'form-control is-invalid':'form-control'"></textarea>
+						</div>
+			                <div th:errors="*{descri}" class="invalid-feedback"></div>
+						
+					</div>
+					<!-- - tid 类型-->
+					<div class="form-group row  w-75  mx-auto">
+					<label th:for="${'tid'}"  class="col-sm-2 col-form-label" th:text="#{book.tid}"></label>
+					<div class="col-sm-10  w-75">
+							<select th:field="*{tid}" title="请选择书籍的类型" class="form-control custom-select" >
+							     <option th:each="type:${types}" th:value="${type.id}" th:text="${type.name}" ></option>
+							</select>
+							<div th:errors="*{tid}" class="invalid-feedback"></div>
+						</div>
+					</div>
+					<!-- photo 图片-->
+					<div class="form-group row  w-75  mx-auto">
+							<label th:for="${'photofile'}"  class="col-sm-2 col-form-label" th:text="#{book.photofile}"></label>
+						<div class="col-sm-8  w-75 custom-file">
+							<input type="file" name="photofile" title="请选择图片" class="custom-file-input"/>
+							 <label class="custom-file-label" for="customFile"> 选择图片 </label>
+						</div>
+						<!-- <div class="col-sm-2  w-75 ">
+							 <img  th:src="@{'/upload/'+${book.photo }}" style="max-width: 80px ;max-height: 80px"/>
+						</div> -->
+					</div>
+					<!-- - pubdate 日期-->
+					<div class="form-group row  w-75  mx-auto">
+					<label th:for="${'pubdate'}"  class="col-sm-2 col-form-label" th:text="#{book.pubdate}"></label>
+						<div class="col-sm-10  w-75">
+							<input type="text" th:field="*{pubdate}" class="form-control" />
+						</div>
+						
+					</div>
+					<!--  price -->
+					<div class="form-group row  w-75  mx-auto">
+					<label th:for="${'price'}"  class="col-sm-2 col-form-label" th:text="#{book.price}"></label>
+						<div class="col-sm-10  w-75">
+							<input type="text" th:field="*{price}" class="form-control" th:class="${#fields.hasErrors('price')}?'form-control is-invalid':'form-control'"/>
+								<div th:errors="*{price}" class="invalid-feedback"></div>
+						</div>
+						
+					</div>
+					<!--  author-->
+					<div class="form-group row  w-75  mx-auto">
+						<label th:for="${'author'}"  class="col-sm-2 col-form-label" th:text="#{book.author}"></label>
+						<div class="col-sm-10 w-75">
+							<input type="text"  th:field="*{author}" class="form-control" th:class="${#fields.hasErrors('author')}?'form-control is-invalid':'form-control'"/>
+							<div th:errors="*{author}"  class="invalid-feedback"></div>
+						</div>
+						
+					</div>
+					<!-- 验证码 -->
+					<div class="form-group row w-75  mx-auto">
+						<label th:for="${'vcode'}"  class="col-sm-2 col-form-label">验证码</label>
+		
+						<div class="col-sm-3  w-75">
+							<input type="text" th:field="*{vcode}" class="form-control" maxlength="4" autocomplete="off" th:class="${#fields.hasErrors('vcode')}?'form-control is-invalid':'form-control'"/>
+							<div th:errors="*{vcode}" class="invalid-feedback"></div>
+						</div>
+						<div class="col-sm-6">
+						<img  src="vcode.png" title="点击下一张" class="vcodechange" style="max-width: 40%" /> <a class="vcodechange" >看不清，换一张</a>
+						</div>
+						
+					</div>
+					<div class="form-group row  w-75  mx-auto">
+						<div class="col-sm-10 offset-md-2"><!-- offset-md-2向右偏移量 -->
+							<button type="submit" class="btn btn-primary">编辑</button>
+						</div>
+					</div>
+				</form>
+			<!-- 底部版权 -->
+			<div class="row mx-auto card" style="height: 100px; background-color: e5e5e5; line-height: 100px">
+				<!-- 静态包含，底部版权模块 -->
+				<div class="col-md-12 text-center" th:include="common/copyright::copyright"></div>
+			</div>
+		</div>
+		<!-- js文件放在最后面，提高网页响应速度 -->
+		<script type="text/javascript" src="resources/bower_components/jquery/dist/jquery.min.js"></script>
+		<script type="text/javascript" src="resources/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="resources/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.js"></script>
+	<script type="text/javascript" src="resources/bower_components/bootstrap-datepicker/dist/locales/bootstrap-datepicker.zh-CN.min.js"></script>
+		<script type="text/javascript" src="resources/bower_components/uri-util/dist/uri-util.min.js"></script>
+		<!-- 主题切换的公共js -->
+		<script type="text/javascript" src="resources/common/themejs/theme.js"></script>
+		
+	<script type="text/javascript" th:inline="javascript">
+	$(function() {
+		//修改主题的值，没有选择是默认主题
+		 var theme=[[${#themes.code('bstheme')}]]
+			   $("#themeSel").val(theme);
+		$("#pubdate").datepicker({
+			format : 'yyyy-mm-dd',//日期格式
+			language : 'zh-CN',//中午
+			autoclose : true
+		//自动关闭
+
+		});
+	});
+	  $(function(){
+             $(".col-sm-6 .vcodechange").click(function(){
+                $(".col-sm-6 .vcodechange").attr("src","vcode.png?t="+Math.random());
+                   
+                 });
+
+          });
+	</script>
+	
+</body>
+</html>

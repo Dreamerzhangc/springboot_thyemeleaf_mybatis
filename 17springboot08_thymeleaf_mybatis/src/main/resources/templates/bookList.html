@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!-- 添加命名空间 -->
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<title>书籍列表</title>
+<!-- 主题css -->
+<!-- <link href="resources/theme/dist/<spring:theme code="bstheme"/>/bootstrap.min.css" rel="stylesheet" type="text/css" /> -->
+<link th:href="@{'resources/theme/dist/'+${#themes.code('bstheme')}+'/bootstrap.min.css'}" rel="stylesheet" type="text/css" />
+<!-- icon css -->
+<link th:href="@{resources/icon/iconfonts.css}" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+
+    function useDefaultImg(event){
+        $(event.target).attr("src","resources/image/default.gif");
+        }
+  
+</script>
+<style type="text/css">
+/ /* /当鼠标悬停在图片时候放大  */
+#myimg {
+	cursor: pointer;
+	transition: all 0.6s;
+}
+
+#myimg:hover {
+	transform: scale(2.3);
+}
+</style>
+</head>
+<body>
+	<div class="container">
+		<!-- 顶部导航栏 -->
+		<div class="row ">
+			<div class="col-md-12">
+				<!-- 静态包含，顶部导航栏模块 -->
+				<!--include包含内容可能会丢; repace包含的div可能丢失，内容不丢失  -->
+				<div class="navbar navbar-expand-lg navbar-light bg-light" th:replace="common/nav::nav"></div>
+			</div>
+		</div>
+		<!-- 数据显示界面 -->
+		<div class="card-header text-center card">
+			<form action="tobooklist" id="booklistSearchForm">
+				<input name="pageNo" type="hidden" value="1"/>
+				<div class="form-row align-items-center">
+					<div class="col-sm-3 my-1">
+
+						<label class="sr-only" for="inlineFormInputName">书名</label> <input type="text" class="form-control" id="inlineFormInputName" placeholder="书名" name="name"
+							th:value="${param.name!=null? param.name[0]:''}" ></input>
+					</div>
+					<div class="col-sm-3 my-1">
+						<label class="sr-only" for="inlineFormInputGroupUsername">类型</label>
+						<div class="input-group">
+							<select name="tid" class="custom-select" id="tid_sel">
+								<option value="-1">--------------请选择-------------</option>
+								<option th:each="type:${types}" th:value="${type.id }" th:text="${type.name }"></option>
+							</select>
+						</div>
+					</div>
+
+					<div class="col-auto my-1">
+						<button type="submit" class="btn btn-primary">搜索</button>
+					</div>
+
+				</div>
+			</form>
+		</div>
+		<div class="card-header text-center container card">
+			<div class="container-fluid">
+				<div class="row">
+					<div class="col-md-12">
+						<table class="table table-bordered">
+							<!-- 优化列表界面，自己设置列宽 -->
+							<thead class="col-md-12">
+								<tr class="row">
+									<!-- 设置每一列宽 -->
+									<th class="col-md-1 col-1 text-center">id</th>
+									<th class="col-md-1 col-1 text-center">name</th>
+									<th class="col-md-1 col-1 text-center">tid</th>
+									<th class="col-md-2 col-1 text-center">descri</th>
+									<th class="col-md-3 col-1 text-center">photo</th>
+									<th class="col-md-1 col-1 text-center">price</th>
+									<th class="col-md-1 col-1 text-center">pubdate</th>
+									<th class="col-md-1 col-1 text-center">author</th>
+									<th class="col-md-1 col-1 text-center">操作</th>
+								</tr>
+							</thead>
+							<tbody class="col-md-12">
+										<tr class="row text-center" th:if="${#lists.isEmpty(pageInfo.list)}">
+											<td colspan="9">无数据</td>
+										</tr>
+								
+										<!-- pageInfo返回查询列表 -->
+											<tr class="row" th:unless="${#lists.isEmpty(pageInfo.list)}" th:each="book:${pageInfo.list }">
+												<td class="col-md-1 col-1 text-center" th:text="${book.id}"></td>
+												<td class="col-md-1 col-1 text-center" th:text="${book.name}"></td>
+												<td class="col-md-1 col-1 text-center" th:text="${book.tid}"></td>
+												<!-- -存在xss攻击，存一段js会执行  预防xss攻击，使用html转义-->
+												<td class="col-md-2 col-1 text-center" th:text="${book.descri}">
+					
+												</td>
+												<td class="col-md-3 col-1 text-center">
+												 <img id="myimg" th:src="@{'/upload/'+${book.photo }}" style="width: 30%; cursor: pointer;" class="img-thumbnail" onerror="useDefaultImg(event)"/></td>
+												<td class="col-md-1 col-1 text-center" th:text="${book.price}"></td>
+												<!-- 日期格式化 -->
+												<td class="col-md-1 col-1 text-center" th:text="${book.pubdate!=null?#dates.format(book.pubdate,'yyyy-MM-dd'):''}"></td>
+												<td class="col-md-1 col-1 text-center" th:text="${book.author}"></td>
+
+												<td class="col-md-1 col-1 text-center">
+													<!--  style="text-decoration: none"设置清除超链接的默认下划线 -->
+													 <a th:href="@{'bookdel?id='+${book.id }}" style="text-decoration: none" title="删除" onclick="delconfirm(event)"><span class="icon-bin"></span></a>&nbsp;&nbsp; 
+													<a th:href="@{'tobookEdit?id='+${book.id }}" style="text-decoration: none" title="修改"><span class="icon-pencil"></span></a>
+
+												</td>
+											</tr>
+										
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+			</div>
+			<div class="card-footer text-muted  card">
+				<div class="container-fluid ">
+					<tr>
+						<td colspan="9" style="padding-bottom: 0px; padding-top: 0px" class="text-center">
+							<nav aria-label="Page navigation example">
+								<ul class="pagination" style="margin: 0px">
+
+								
+											<li class="page-item" th:if="${pageInfo.isFirstPage }"><a href="javascript:void(0)" class="page-link">&laquo;</a></li>
+									
+											<li class="page-item" th:unless="${pageInfo.isFirstPage }"><a class="page-link" th:href="@{'tobooklist?pageNo='+${pageInfo.prePage}}">&laquo;</a></li>
+									
+									
+											<li class="page-item" th:each="pi:${pageInfo.navigatepageNums}" th:class="${pi==pageInfo.pageNum?'page-item active':'page-item ' }">
+										
+											 <a th:href="@{'tobooklist?pageNo='+${pi}}" class="page-link" th:text="${pi }" ></a></li>
+										
+										
+												<li class="disabled" th:if="${pageInfo.isLastPage }"><a href="javascript:void(0)" class="page-link">&raquo;</a></li>
+										
+										
+												<li class="page-item" th:unless="${pageInfo.isLastPage }"><a th:href="@{'tobooklist?pageNo='+${pageInfo.nextPage}}" class="page-link">&raquo;</a></li>
+
+											
+
+										
+								</ul>
+							</nav>
+						</td>
+					</tr>
+				</div>
+
+			</div>
+			<!-- Modal -->
+		<div class="modal fade" id="delDialog" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="exampleModalLabel">确认删除</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+
+						<p>请确认要删除？</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+						<button type="button" class="btn btn-primary btn_ok">确定</button>
+					</div>
+				</div>
+			</div>
+		</div>
+			<!-- 底部版权 -->
+			<div class="row mx-auto card" style="height: 100px; background-color: e5e5e5; line-height: 100px">
+				<!-- 静态包含，底部版权模块 -->
+				<div class="col-md-12 text-center" th:include="common/copyright::copyright"></div>
+			</div>
+		</div>
+		<!-- js文件放在最后面，提高网页响应速度 -->
+		<script type="text/javascript" src="resources/bower_components/jquery/dist/jquery.min.js"></script>
+		<script type="text/javascript" src="resources/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="resources/bower_components/uri-util/dist/uri-util.min.js"></script>
+		<!-- 主题切换的公共js -->
+		<script type="text/javascript" src="resources/common/themejs/theme.js"></script>
+		<script type="text/javascript" th:inline="javascript">
+		/* //修改主题的值，没有选择是默认主题*/
+		$(function() {
+			/* //修改主题的值，没有选择是默认主题*/
+           var theme=[[${#themes.code('bstheme')}]]
+			   $("#themeSel").val(theme);
+		   //tid回填
+           var tid=[[${ param.tid==null?-1:param.tid[0]}]]
+   		    $("#tid_sel").val(tid);
+	        var prePage=[[${pageInfo.prePage}]];
+	        var nextPage=[[${pageInfo.nextPage}]];
+		$('a[class="page-link"][href^="tobooklist?pageNo="]').click(function(evt) {
+					evt.preventDefault();
+					//修改表单中pageNo的值
+					if($(this).text()=="»")
+						{
+						$('#booklistSearchForm input[name="pageNo"]').val(nextPage);  
+						}
+					else if($(this).text()=="«"){
+						$('#booklistSearchForm input[name="pageNo"]').val(prePage);  
+						}
+					else{
+
+					$('#booklistSearchForm input[name="pageNo"]').val($(this).text());
+							
+						}
+					$("#booklistSearchForm").submit();
+				});
+		//对模态对话框配置
+		$("#delDialog").modal({
+			backdrop : 'static',//否则你点击对话框外的部分就消失
+			show : false
+		//默认是显示的
+		});
+			
+	
+      
+	});
+	//该函数不能放在内部，放进去就是局部变量，删除连接点击无法找到
+	function delconfirm(event) {
+		//取消超级链接的默认行为
+		event.preventDefault();
+		//显示模态对话框：点击的是图标，因而我们要找他的父亲a
+		var url = $(event.target).parent("a").attr("href");
+		$('#delDialog').modal('show');
+		//给确认框绑定一次性事件
+		$("#delDialog button.btn_ok").one("click", function() {
+			window.location.href = url;
+		});
+	}
+	</script>
+	
+</body>
+</html>
